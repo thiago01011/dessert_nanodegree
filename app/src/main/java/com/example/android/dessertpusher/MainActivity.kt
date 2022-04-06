@@ -18,6 +18,7 @@ package com.example.android.dessertpusher
 
 import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -26,11 +27,19 @@ import androidx.core.app.ShareCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleObserver
 import com.example.android.dessertpusher.databinding.ActivityMainBinding
+import kotlinx.android.synthetic.main.activity_main.*
+import timber.log.Timber
+
+private val KEY_REVENUE = "key_revenue"
+private val KEY_TIMER = "key_timer"
+private val KEY_CASH_EARNED = "key_cash"
+
 
 class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private var revenue = 0
     private var dessertsSold = 0
+    private lateinit var dessertTimer: DessertTimer
 
     // Contains all the views
     private lateinit var binding: ActivityMainBinding
@@ -64,7 +73,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //Log.i("MainActivity", "Creating...")
+        Timber.i("Creating...")
         // Use Data Binding to get reference to the views
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
@@ -72,14 +82,63 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             onDessertClicked()
         }
 
-        // Set the TextViews to the right values
+        dessertTimer = DessertTimer(this.lifecycle)
+
+        revenue = savedInstanceState?.getInt(KEY_REVENUE, 0)?: 0
+        dessertsSold = savedInstanceState?.getInt(KEY_CASH_EARNED, 0)?: 0
+
         binding.revenue = revenue
         binding.amountSold = dessertsSold
+
+        dessertTimer.secondsCount = savedInstanceState?.getInt(KEY_TIMER, 0)?: 0
 
         // Make sure the correct dessert is showing
         binding.dessertButton.setImageResource(currentDessert.imageId)
     }
 
+    override fun onStart() {
+        super.onStart()
+        //Log.i("MainActivity", "Starting...")
+        Timber.i("Starting...")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Timber.i("Resuming...")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Timber.i("Pausing...")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.i("Destroying...")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Timber.i("Restarting...")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Timber.i("Stoping...")
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        Timber.i("Saving instance...")
+        outState.putInt(KEY_REVENUE, revenue)
+        outState.putInt(KEY_TIMER, dessertTimer.secondsCount)
+        outState.putInt(KEY_CASH_EARNED, dessertsSold)
+        super.onSaveInstanceState(outState)
+
+    }
     /**
      * Updates the score when the dessert is clicked. Possibly shows a new dessert.
      */
